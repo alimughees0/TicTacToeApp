@@ -1,27 +1,31 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, SIZES } from '../constants/theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAppFeedback } from '../hooks/useAppFeedback';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { COLORS, SIZES } from "../constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAppFeedback } from "../hooks/useAppFeedback";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = ({ navigation }) => {
   const { triggerHaptic } = useAppFeedback();
 
   const handleStartGame = (mode) => {
     triggerHaptic();
-    navigation.navigate('Game', { mode });
+    navigation.navigate("Game", { mode });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.background, '#1E293B']}
+        colors={[COLORS.background, "#1E293B"]}
         style={styles.gradient}
       >
         <View style={styles.header}>
-          <MaterialCommunityIcons name="grid" size={100} color={COLORS.primary} />
+          <Image
+            source={require("../../assets/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>TIC TAC TOE</Text>
           <Text style={styles.subtitle}>Premium Edition</Text>
         </View>
@@ -29,28 +33,42 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: COLORS.primary }]}
-            onPress={() => handleStartGame('Single')}
+            onPress={() => handleStartGame("Single")}
           >
-            <MaterialCommunityIcons name="robot" size={24} color={COLORS.background} />
+            <MaterialCommunityIcons
+              name="robot"
+              size={24}
+              color={COLORS.background}
+            />
             <Text style={styles.buttonText}>Single Player</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, { backgroundColor: COLORS.secondary }]}
-            onPress={() => handleStartGame('TwoPlayer')}
+            onPress={() => handleStartGame("TwoPlayer")}
           >
-            <MaterialCommunityIcons name="account-group" size={24} color={COLORS.white} />
-            <Text style={[styles.buttonText, { color: COLORS.white }]}>Two Players</Text>
+            <MaterialCommunityIcons
+              name="account-group"
+              size={24}
+              color={COLORS.white}
+            />
+            <Text style={[styles.buttonText, { color: COLORS.white }]}>
+              Two Players
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => {
               triggerHaptic();
-              navigation.navigate('Settings');
+              navigation.navigate("Settings");
             }}
           >
-            <MaterialCommunityIcons name="cog" size={24} color={COLORS.textSecondary} />
+            <MaterialCommunityIcons
+              name="cog"
+              size={24}
+              color={COLORS.textSecondary}
+            />
             <Text style={styles.settingsText}>Settings</Text>
           </TouchableOpacity>
         </View>
@@ -70,16 +88,20 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     padding: 20,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 80,
+  },
+  logo: {
+    width: 150,
+    height: 150,
   },
   title: {
     fontSize: 42,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.white,
     letterSpacing: 4,
     marginTop: 20,
@@ -88,18 +110,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.primary,
     letterSpacing: 8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   buttonContainer: {
-    width: '100%',
+    width: "100%",
     paddingHorizontal: 20,
   },
   button: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -109,15 +131,15 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: COLORS.background,
     marginLeft: 10,
   },
   settingsButton: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   settingsText: {
     fontSize: 16,

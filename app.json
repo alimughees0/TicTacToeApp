@@ -18,13 +18,23 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "package": "com.alimughees.TicTacToeApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-audio"
-    ]
+    "plugins": ["expo-audio"],
+    "extra": {
+      "eas": {
+        "projectId": "c108786e-0f38-42b4-a852-9e7b638c1f80"
+      }
+    }
   }
 }

@@ -10,17 +10,19 @@ import { useAppFeedback } from '../hooks/useAppFeedback';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
 
 const GameScreen = ({ route, navigation }) => {
-  const { mode } = route.params;
+  const { theme: colors } = useTheme();
+  const { mode, difficulty: initialDifficulty } = route.params;
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
   const [winningLine, setWinningLine] = useState(null);
   const [scores, setScores] = useState({ X: 0, O: 0, Draw: 0 });
-  const [difficulty, setDifficulty] = useState('Hard');
+  const [difficulty, setDifficulty] = useState(initialDifficulty || 'Hard');
   const confettiRef = useRef(null);
-  const { triggerHaptic, triggerSuccessHaptic } = useAppFeedback();
+  const { triggerHaptic, triggerSuccessHaptic, playSound } = useAppFeedback();
 
   useEffect(() => {
     loadScores();
@@ -35,7 +37,10 @@ const GameScreen = ({ route, navigation }) => {
       updateScores(result.winner);
       if (result.winner !== 'Draw') {
         triggerSuccessHaptic();
+        playSound('win');
         confettiRef.current?.start();
+      } else {
+        playSound('draw');
       }
     } else if (!isXNext && mode === 'Single' && !winner) {
       // AI Turn
@@ -58,15 +63,47 @@ const GameScreen = ({ route, navigation }) => {
   };
 
   const updateScores = async (gameWinner) => {
+    // Session scores
     const newScores = { ...scores, [gameWinner]: scores[gameWinner] + 1 };
     setScores(newScores);
     await AsyncStorage.setItem('scores', JSON.stringify(newScores));
+
+    // Historical stats
+    try {
+      const savedStats = await AsyncStorage.getItem('game_stats');
+      let stats = savedStats ? JSON.parse(savedStats) : {
+        totalGames: 0,
+        winsX: 0,
+        winsO: 0,
+        draws: 0,
+        easyWins: 0,
+        mediumWins: 0,
+        hardWins: 0,
+      };
+
+      stats.totalGames += 1;
+      if (gameWinner === 'X') stats.winsX += 1;
+      if (gameWinner === 'O') stats.winsO += 1;
+      if (gameWinner === 'Draw') stats.draws += 1;
+
+      // Track difficulty wins for Player X (Human)
+      if (gameWinner === 'X' && mode === 'Single') {
+        if (difficulty === 'Easy') stats.easyWins += 1;
+        else if (difficulty === 'Medium') stats.mediumWins += 1;
+        else if (difficulty === 'Hard') stats.hardWins += 1;
+      }
+
+      await AsyncStorage.setItem('game_stats', JSON.stringify(stats));
+    } catch (error) {
+      console.error('Error updating historical stats:', error);
+    }
   };
 
   const handlePress = (index) => {
     if (board[index] || winner) return;
 
     triggerHaptic();
+    playSound('tap');
     const newBoard = [...board];
     newBoard[index] = isXNext ? 'X' : 'O';
     setBoard(newBoard);
@@ -83,14 +120,14 @@ const GameScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={[COLORS.background, '#1E293B']} style={styles.gradient}>
+      <LinearGradient colors={[colors.background, colors.surface]} style={styles.gradient}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="chevron-left" size={32} color={COLORS.text} />
+            <MaterialCommunityIcons name="chevron-left" size={32} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>{mode === 'Single' ? 'vs AI' : '2 Players'}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{mode === 'Single' ? 'vs AI' : '2 Players'}</Text>
           <TouchableOpacity onPress={resetGame} style={styles.resetButton}>
-            <MaterialCommunityIcons name="refresh" size={28} color={COLORS.text} />
+            <MaterialCommunityIcons name="refresh" size={28} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -98,12 +135,12 @@ const GameScreen = ({ route, navigation }) => {
 
         <View style={styles.statusContainer}>
           {winner ? (
-            <Text style={[styles.statusText, { color: winner === 'Draw' ? COLORS.text : winner === 'X' ? COLORS.x : COLORS.o }]}>
+            <Text style={[styles.statusText, { color: winner === 'Draw' ? colors.text : winner === 'X' ? colors.x : colors.o }]}>
               {winner === 'Draw' ? "It's a Draw!" : `Player ${winner} Wins!`}
             </Text>
           ) : (
-            <Text style={styles.turnText}>
-              Player <Text style={{ color: isXNext ? COLORS.x : COLORS.o }}>{isXNext ? 'X' : 'O'}</Text>'s Turn
+            <Text style={[styles.turnText, { color: colors.textSecondary }]}>
+              Player <Text style={{ color: isXNext ? colors.x : colors.o }}>{isXNext ? 'X' : 'O'}</Text>'s Turn
             </Text>
           )}
         </View>
@@ -117,8 +154,8 @@ const GameScreen = ({ route, navigation }) => {
 
         <View style={styles.footer}>
           {winner && (
-            <TouchableOpacity style={styles.playAgainBtn} onPress={resetGame}>
-              <Text style={styles.playAgainText}>Play Again</Text>
+            <TouchableOpacity style={[styles.playAgainBtn, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={resetGame}>
+              <Text style={[styles.playAgainText, { color: colors.background }]}>Play Again</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import AppNavigator from './src/navigation/AppNavigator';
 import CustomSplashScreen from './src/screens/CustomSplashScreen';
+import { ThemeProvider } from './src/context/ThemeContext';
 
 // Keep the native splash screen visible until we're ready to show our custom one
 SplashScreen.preventAutoHideAsync();
@@ -32,17 +33,17 @@ export default function App() {
 
   if (showCustomSplash) {
     return (
-      <>
+      <ThemeProvider>
         <StatusBar style="light" />
         <CustomSplashScreen />
-      </>
+      </ThemeProvider>
     );
   }
 
   return (
-    <>
+    <ThemeProvider>
       <StatusBar style="light" />
       <AppNavigator />
-    </>
+    </ThemeProvider>
   );
 }

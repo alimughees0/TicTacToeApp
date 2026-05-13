@@ -1,23 +1,34 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Modal,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLORS, SIZES } from "../constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAppFeedback } from "../hooks/useAppFeedback";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../context/ThemeContext";
 
 const HomeScreen = ({ navigation }) => {
+  const { theme: colors } = useTheme();
   const { triggerHaptic } = useAppFeedback();
+  const [showDifficultyModal, setShowDifficultyModal] = useState(false);
 
-  const handleStartGame = (mode) => {
+  const handleStartGame = (mode, difficulty = "Hard") => {
     triggerHaptic();
-    navigation.navigate("Game", { mode });
+    setShowDifficultyModal(false);
+    navigation.navigate("Game", { mode, difficulty });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={[COLORS.background, "#1E293B"]}
+        colors={[colors.background, colors.surface]}
         style={styles.gradient}
       >
         <View style={styles.header}>
@@ -26,35 +37,50 @@ const HomeScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>TIC TAC TOE</Text>
-          <Text style={styles.subtitle}>Premium Edition</Text>
+          <Text style={[styles.title, { color: colors.text }]}>TIC TAC TOE</Text>
+          <Text style={[styles.subtitle, { color: colors.primary }]}>Premium Edition</Text>
         </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.primary }]}
-            onPress={() => handleStartGame("Single")}
+            style={[styles.button, { backgroundColor: colors.primary }]}
+            onPress={() => setShowDifficultyModal(true)}
           >
             <MaterialCommunityIcons
               name="robot"
               size={24}
-              color={COLORS.background}
+              color={colors.background}
             />
-            <Text style={styles.buttonText}>Single Player</Text>
+            <Text style={[styles.buttonText, { color: colors.background }]}>Single Player</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: COLORS.secondary }]}
+            style={[styles.button, { backgroundColor: colors.secondary }]}
             onPress={() => handleStartGame("TwoPlayer")}
           >
             <MaterialCommunityIcons
               name="account-group"
               size={24}
-              color={COLORS.white}
+              color={colors.text}
             />
-            <Text style={[styles.buttonText, { color: COLORS.white }]}>
+            <Text style={[styles.buttonText, { color: colors.text }]}>
               Two Players
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => {
+              triggerHaptic();
+              navigation.navigate("Stats");
+            }}
+          >
+            <MaterialCommunityIcons
+              name="chart-bar"
+              size={24}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.settingsText, { color: colors.textSecondary }]}>Stats</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -67,11 +93,40 @@ const HomeScreen = ({ navigation }) => {
             <MaterialCommunityIcons
               name="cog"
               size={24}
-              color={COLORS.textSecondary}
+              color={colors.textSecondary}
             />
-            <Text style={styles.settingsText}>Settings</Text>
+            <Text style={[styles.settingsText, { color: colors.textSecondary }]}>Settings</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Difficulty Selection Modal */}
+        <Modal
+          visible={showDifficultyModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowDifficultyModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Choose Difficulty</Text>
+              {["Easy", "Medium", "Hard"].map((level) => (
+                <TouchableOpacity
+                  key={level}
+                  style={styles.difficultyOption}
+                  onPress={() => handleStartGame("Single", level)}
+                >
+                  <Text style={[styles.difficultyOptionText, { color: colors.primary }]}>{level}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowDifficultyModal(false)}
+              >
+                <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <View style={styles.footer}>
           {/* <Text style={styles.footerText}>Made with ❤️ using Expo</Text> */}
@@ -148,6 +203,46 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginBottom: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.white,
+    marginBottom: 20,
+  },
+  difficultyOption: {
+    width: "100%",
+    padding: 15,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  difficultyOptionText: {
+    fontSize: 18,
+    color: COLORS.primary,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    marginTop: 10,
+    padding: 10,
+  },
+  cancelButtonText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
   },
   footerText: {
     color: COLORS.textSecondary,

@@ -6,8 +6,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppFeedback } from '../hooks/useAppFeedback';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
+import { THEMES } from '../constants/theme';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const SettingsScreen = ({ navigation }) => {
+  const { theme: colors, currentTheme, updateTheme } = useTheme();
   const { triggerHaptic, settings } = useAppFeedback();
   const [difficulty, setDifficulty] = useState('Hard');
 
@@ -47,53 +51,90 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient colors={[COLORS.background, '#1E293B']} style={styles.gradient}>
+      <LinearGradient colors={[colors.background, colors.surface]} style={styles.gradient}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="chevron-left" size={32} color={COLORS.text} />
+            <MaterialCommunityIcons name="chevron-left" size={32} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Settings</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
           <View style={{ width: 32 }} />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <View style={styles.row}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferences</Text>
+          <View style={[styles.row, { backgroundColor: colors.surface }]}>
             <View style={styles.rowLeft}>
-              <MaterialCommunityIcons name="volume-high" size={24} color={COLORS.primary} />
-              <Text style={styles.rowLabel}>Sound Effects</Text>
+              <MaterialCommunityIcons name="volume-high" size={24} color={colors.primary} />
+              <Text style={[styles.rowLabel, { color: colors.text }]}>Sound Effects</Text>
             </View>
             <Switch
               value={settings.isSoundEnabled}
               onValueChange={() => toggleSwitch('sound')}
-              trackColor={{ false: '#334155', true: COLORS.primary }}
-              thumbColor={COLORS.white}
+              trackColor={{ false: '#334155', true: colors.primary }}
+              thumbColor={colors.text}
             />
           </View>
-          <View style={styles.row}>
+          <View style={[styles.row, { backgroundColor: colors.surface }]}>
             <View style={styles.rowLeft}>
-              <MaterialCommunityIcons name="vibrate" size={24} color={COLORS.primary} />
-              <Text style={styles.rowLabel}>Haptic Feedback</Text>
+              <MaterialCommunityIcons name="vibrate" size={24} color={colors.primary} />
+              <Text style={[styles.rowLabel, { color: colors.text }]}>Haptic Feedback</Text>
             </View>
             <Switch
               value={settings.isHapticEnabled}
               onValueChange={() => toggleSwitch('haptic')}
-              trackColor={{ false: '#334155', true: COLORS.primary }}
-              thumbColor={COLORS.white}
+              trackColor={{ false: '#334155', true: colors.primary }}
+              thumbColor={colors.text}
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>AI Difficulty</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Visual Theme</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.themeContainer}>
+            {Object.keys(THEMES).map((themeKey) => (
+              <TouchableOpacity
+                key={themeKey}
+                style={[
+                  styles.themeBtn,
+                  { backgroundColor: THEMES[themeKey].surface },
+                  currentTheme === themeKey && { borderColor: colors.primary }
+                ]}
+                onPress={() => {
+                  triggerHaptic();
+                  updateTheme(themeKey);
+                }}
+              >
+                <View style={[styles.themePreview, { backgroundColor: THEMES[themeKey].background }]}>
+                  <View style={[styles.themeCircle, { backgroundColor: THEMES[themeKey].primary }]} />
+                </View>
+                <Text style={[
+                  styles.themeText,
+                  { color: currentTheme === themeKey ? colors.primary : colors.textSecondary }
+                ]}>
+                  {THEMES[themeKey].name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>AI Difficulty</Text>
           <View style={styles.difficultyContainer}>
             {['Easy', 'Medium', 'Hard'].map((level) => (
               <TouchableOpacity
                 key={level}
-                style={[styles.difficultyBtn, difficulty === level && styles.difficultyBtnActive]}
+                style={[
+                  styles.difficultyBtn,
+                  { backgroundColor: colors.surface },
+                  difficulty === level && [styles.difficultyBtnActive, { borderColor: colors.primary }]
+                ]}
                 onPress={() => saveDifficulty(level)}
               >
-                <Text style={[styles.difficultyText, difficulty === level && styles.difficultyTextActive]}>
+                <Text style={[
+                  styles.difficultyText,
+                  { color: difficulty === level ? colors.primary : colors.textSecondary }
+                ]}>
                   {level}
                 </Text>
               </TouchableOpacity>
@@ -102,12 +143,12 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         <TouchableOpacity style={styles.clearBtn} onPress={clearScores}>
-          <MaterialCommunityIcons name="trash-can-outline" size={20} color={COLORS.danger} />
-          <Text style={styles.clearText}>Clear All Scores</Text>
+          <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.accent} />
+          <Text style={[styles.clearText, { color: colors.accent }]}>Clear All Scores</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.version}>Version 1.0.0</Text>
+          <Text style={[styles.version, { color: colors.textSecondary }]}>Version 1.1.0</Text>
         </View>
       </LinearGradient>
     </SafeAreaView>
@@ -149,9 +190,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  difficultyBtnActive: { borderColor: COLORS.primary, backgroundColor: 'rgba(56, 189, 248, 0.1)' },
-  difficultyText: { color: COLORS.textSecondary, fontWeight: 'bold' },
-  difficultyTextActive: { color: COLORS.primary },
+  difficultyBtnActive: {
+    backgroundColor: 'rgba(56, 189, 248, 0.1)'
+  },
+  difficultyText: { fontWeight: 'bold' },
+  themeContainer: { flexDirection: 'row' },
+  themeBtn: {
+    width: 100,
+    padding: 10,
+    borderRadius: 12,
+    marginRight: 10,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  themePreview: {
+    width: 60,
+    height: 40,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  themeCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  themeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   clearBtn: {
     flexDirection: 'row',
     alignItems: 'center',

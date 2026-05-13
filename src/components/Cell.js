@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
   withSequence,
-  withTiming 
+  withTiming
 } from 'react-native-reanimated';
 import { COLORS, SIZES } from '../constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 const Cell = ({ value, onPress, disabled, isWinningCell }) => {
+  const { theme: colors } = useTheme();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
 
@@ -30,21 +32,22 @@ const Cell = ({ value, onPress, disabled, isWinningCell }) => {
   }));
 
   return (
-    <TouchableOpacity 
-      onPress={onPress} 
+    <TouchableOpacity
+      onPress={onPress}
       disabled={disabled || value !== null}
       style={[
         styles.container,
-        isWinningCell && styles.winningCell
+        { backgroundColor: colors.surface },
+        isWinningCell && [styles.winningCell, { borderColor: colors.primary }]
       ]}
       activeOpacity={0.7}
     >
       <Animated.View style={[styles.iconContainer, animatedStyle]}>
         {value === 'X' && (
-          <MaterialCommunityIcons name="close" size={50} color={COLORS.x} />
+          <MaterialCommunityIcons name="close" size={50} color={colors.x} />
         )}
         {value === 'O' && (
-          <MaterialCommunityIcons name="circle-outline" size={45} color={COLORS.o} />
+          <MaterialCommunityIcons name="circle-outline" size={45} color={colors.o} />
         )}
       </Animated.View>
     </TouchableOpacity>
@@ -67,9 +70,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   winningCell: {
-    backgroundColor: COLORS.glass,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderWidth: 2,
-    borderColor: COLORS.primary,
   },
   iconContainer: {
     justifyContent: 'center',

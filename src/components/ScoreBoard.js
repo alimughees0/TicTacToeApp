@@ -1,23 +1,33 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, SIZES } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const ScoreBoard = ({ scores, activePlayer }) => {
+  const { theme: colors } = useTheme();
   return (
     <View style={styles.container}>
-      <View style={[styles.playerCard, activePlayer === 'X' && styles.activeCardX]}>
-        <Text style={styles.playerName}>Player X</Text>
-        <Text style={styles.scoreText}>{scores.X}</Text>
-      </View>
-      
-      <View style={styles.drawCard}>
-        <Text style={styles.playerName}>Draws</Text>
-        <Text style={styles.scoreText}>{scores.Draw}</Text>
+      <View style={[
+        styles.playerCard,
+        { backgroundColor: colors.surface },
+        activePlayer === 'X' && [styles.activeCardX, { borderColor: colors.x }]
+      ]}>
+        <Text style={[styles.playerName, { color: colors.textSecondary }]}>Player X</Text>
+        <Text style={[styles.scoreText, { color: colors.text }]}>{scores.X}</Text>
       </View>
 
-      <View style={[styles.playerCard, activePlayer === 'O' && styles.activeCardO]}>
-        <Text style={styles.playerName}>Player O</Text>
-        <Text style={styles.scoreText}>{scores.O}</Text>
+      <View style={[styles.drawCard, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.playerName, { color: colors.textSecondary }]}>Draws</Text>
+        <Text style={[styles.scoreText, { color: colors.text }]}>{scores.Draw}</Text>
+      </View>
+
+      <View style={[
+        styles.playerCard,
+        { backgroundColor: colors.surface },
+        activePlayer === 'O' && [styles.activeCardO, { borderColor: colors.o }]
+      ]}>
+        <Text style={[styles.playerName, { color: colors.textSecondary }]}>Player O</Text>
+        <Text style={[styles.scoreText, { color: colors.text }]}>{scores.O}</Text>
       </View>
     </View>
   );
@@ -48,11 +58,9 @@ const styles = StyleSheet.create({
     width: '30%',
   },
   activeCardX: {
-    borderColor: COLORS.x,
     backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   activeCardO: {
-    borderColor: COLORS.o,
     backgroundColor: 'rgba(244, 114, 182, 0.1)',
   },
   playerName: {
